@@ -1,5 +1,6 @@
 const container = document.querySelector(".table-container")
 const refresh = document.querySelector("#refresh");
+const timerBTN = document.querySelector("#start")
 
 CreateTable(container, 6, 6);
 var counter = 1;
@@ -10,8 +11,25 @@ refresh.addEventListener("click", () => {
     container.firstChild.remove();
     CreateTable(container, 6, 6);
     counter = 1;
+    resetWatch();
+    timerBTN.innerHTML = "Start";
+    timerIsActive = false;
     
 })
+var timerIsActive = false;
+timerBTN.addEventListener("click", () =>{
+    if(!timerIsActive){
+        timerBTN.innerHTML = "Stop";
+        timerIsActive = true;
+        startWatch();
+    }
+    else{
+        timerBTN.innerHTML = "Start";
+        timerIsActive = false;
+        pausedWatch();
+    }
+})
+
 
 function  CreateTable(parent, cols, rows){
     const table = document.createElement('table');
@@ -65,8 +83,64 @@ function TableListen(table){
 }
 
 function ChangeAppearance(cell){
+    if(timerIsActive == false){
+        timerBTN.innerHTML = "Stop";
+        timerIsActive = true;
+        startWatch();
+    }
     if(cell.innerHTML == counter){
         cell.style.background = 'green';
         counter++;
+        if(counter == 36){
+            pausedWatch();
+        }
     }
+    else{
+        errorTarget(cell);
+    }
+}
+const errorTarget = (target) =>{
+    let checked = false;
+    if(target.style.background == 'green')
+        checked = true;
+    else
+        target.style.background = 'red';
+    let errorTimer;
+    clearTimeout(errorTimer);
+    errorTimer = setTimeout(() =>{
+        if(checked)
+            target.style.background = 'green'
+        else
+            target.style.background = '#7ea8da';
+    },300)
+}
+
+
+const watch = document.querySelector("#watch");
+let timer;
+let milliseconds = 0;
+
+const startWatch = () =>{
+    watch.classList.remove('paused');
+    clearInterval(timer);
+    timer = setInterval(() =>{
+        milliseconds += 10;
+        let dateTimer = new Date(milliseconds);
+        watch.innerHTML =
+            ('0' + dateTimer.getUTCMinutes()).slice(-2) + ':' +
+            ('0' + dateTimer.getUTCSeconds()).slice(-2) + ':' +
+            ('0' + dateTimer.getUTCMilliseconds()).slice(-3,-1); 
+    },10)
+};
+
+const pausedWatch = () => {
+    watch.classList.add('paused');
+    clearInterval(timer)
+};
+
+const resetWatch = () => {
+    watch.classList.remove('paused');
+    clearInterval(timer);
+    milliseconds = 0;
+    watch.innerHTML = "00:00:00";
 }
